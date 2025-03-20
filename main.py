@@ -1,79 +1,97 @@
+#import modules
 import tkinter as tk
 from tkinter import messagebox
 
-class ContactBookApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Contact Book")
-        self.contacts = []
+# Configure and create main window
+dp = tk.Tk()
+dp.geometry('500x450+500+200')
+dp.title('To-Do List')
+dp.config(bg='#EEE8AA')
 
-        # GUI Components
-        self.label_name = tk.Label(root, text="Name:")
-        self.label_name.grid(row=0, column=0)
-        self.entry_name = tk.Entry(root)
-        self.entry_name.grid(row=0, column=1)
+# Create widgets
+frame = tk.Frame(dp)
+frame.pack(pady=10)
 
-        self.label_phone = tk.Label(root, text="Phone:")
-        self.label_phone.grid(row=1, column=0)
-        self.entry_phone = tk.Entry(root)
-        self.entry_phone.grid(row=1, column=1)
+# Create Listbox Widgets
+lb = tk.Listbox(
+    frame,
+    width=25,
+    height=8,
+    font=('Times', 15),
+    bd=3,
+    fg='#464646',
+    highlightthickness=0,
+    selectbackground='#464646',
+    activestyle='none',
+)
+lb.pack(side=tk.LEFT, fill=tk.BOTH)
 
-        self.add_button = tk.Button(root, text="Add Contact", command=self.add_contact)
-        self.add_button.grid(row=2, column=1)
+# Initializes TaskBox with default tasks
+task_list = (
+    'Post on LinkedIn',
+    'Visit shop',
+    'Buy cookies'
+)
+for item in task_list:
+    lb.insert(tk.END, item)
 
-        self.search_button = tk.Button(root, text="Search Contact", command=self.search_contact)
-        self.search_button.grid(row=3, column=1)
 
-        self.update_button = tk.Button(root, text="Update Contact", command=self.update_contact)
-        self.update_button.grid(row=4, column=1)
+# Create a ScrollBar
+sb = tk.Scrollbar(frame)
+sb.pack(side=tk.RIGHT, fill=tk.BOTH)
+lb.config(yscrollcommand=sb.set)
+sb.config(command=lb.yview)
 
-        self.view_button = tk.Button(root, text="View Contacts", command=self.view_contacts)
-        self.view_button.grid(row=5, column=1)
+# Widget for user Input
+my_entry = tk.Entry(
+    dp,
+    font=('Times', 18)
+)
+my_entry.pack(pady=20)
 
-    def add_contact(self):
-        name = self.entry_name.get()
-        phone = self.entry_phone.get()
+#This creates another frame inside the main window dp for holding buttons and packs it with some padding.
+button_frame = tk.Frame(dp)
+button_frame.pack(pady=20)
 
-        if name and phone:
-            self.contacts.append({"Name": name, "Phone": phone})
-            messagebox.showinfo("Success", "Contact added successfully!")
-            self.entry_name.delete(0, tk.END)
-            self.entry_phone.delete(0, tk.END)
-        else:
-            messagebox.showerror("Error", "Please enter both name and phone.")
+# Defines newTask() and inserts new tasks to the listbox
+def newTask():
+    task = my_entry.get()
+    if task != "":
+        lb.insert(tk.END, task)
+        my_entry.delete(0, "end")
+    else:
+        messagebox.showwarning("Warning", "Please enter some task!")
 
-    def search_contact(self):
-        name_to_search = self.entry_name.get()
-        found_contacts = [contact for contact in self.contacts if contact['Name'] == name_to_search]
+#This defines a function deleteTask() to delete a selected task from the listbox
+def deleteTask():
+    try:
+        selected_task = lb.curselection()[0]
+        lb.delete(selected_task)
+    except IndexError:
+        messagebox.showwarning("Warning", "Please select a task to delete.")
 
-        if found_contacts:
-            contact_info = "\n".join([f"{contact['Name']}: {contact['Phone']}" for contact in found_contacts])
-            messagebox.showinfo("Search Result", contact_info)
-        else:
-            messagebox.showinfo("Search Result", "No contact found with that name.")
+# Create button widgets for adding and deleting tasks
+addTask_btn = tk.Button(
+    button_frame,
+    text='Add Task',
+    font=('times', 14),
+    bg='#8B8378',
+    padx=20,
+    pady=10,
+    command=newTask
+)
+addTask_btn.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
 
-    def update_contact(self):
-        name_to_update = self.entry_name.get()
-        new_phone = self.entry_phone.get()
+delTask_btn = tk.Button(
+    button_frame,
+    text='Delete Task',
+    font=('times', 14),
+    bg='#8B8378',
+    padx=20,
+    pady=10,
+    command=deleteTask
+)
+delTask_btn.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
 
-        for contact in self.contacts:
-            if contact['Name'] == name_to_update:
-                contact['Phone'] = new_phone
-                messagebox.showinfo("Success", "Contact updated successfully!")
-                self.entry_name.delete(0, tk.END)
-                self.entry_phone.delete(0, tk.END)
-                return
-
-        messagebox.showinfo("Update Error", "No contact found with that name.")
-
-    def view_contacts(self):
-        if self.contacts:
-            contact_list = "\n".join([f"{contact['Name']}: {contact['Phone']}" for contact in self.contacts])
-            messagebox.showinfo("Contacts", contact_list)
-        else:
-            messagebox.showinfo("Contacts", "No contacts to display.")
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = ContactBookApp(root)
-    root.mainloop()
+# Starting tkinter event loop
+dp.mainloop()
